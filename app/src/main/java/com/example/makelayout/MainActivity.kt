@@ -5,6 +5,7 @@ import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -15,6 +16,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+
+    var  firstCard: View = View(this)
+    var  openCardsCount = 0 // число открытых карт
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val layout = LinearLayout(applicationContext)
@@ -25,6 +29,29 @@ class MainActivity : AppCompatActivity() {
 
         // TODO: 3) реализовать переворот карт с "рубашки" на лицевую сторону и обратно
         val colorListener = View.OnClickListener() {
+            when (openCardsCount) {
+                0 -> { // перевернуть карту
+                    firstCard = it; openCardsCount++; it.isClickable = false
+                }
+                1 -> {
+                    // проверить, совпадает ли перевёрнутая сейчас карта
+                    if (it.tag == firstCard.tag) {
+                        it.visibility = View.INVISIBLE; it.isClickable = false
+                        firstCard.visibility = View.INVISIBLE; firstCard.isClickable = false
+                    } else {
+                        // карту перевернуть
+                        // подождать, вернуть обратно обе карты
+                        // не забыть включить карты it.isClickable = true
+                        it.visibility = View.VISIBLE; it.isClickable = true
+                        firstCard.visibility = View.VISIBLE; firstCard.isClickable = true
+
+                    }
+                    openCardsCount = 2
+                }
+                // и перевёрнутая ранее
+                else -> Log.d("mytag", "two cards are open already") // ничего не делаем
+            }
+           // запуск функции во внешнем потоке
             GlobalScope.launch (Dispatchers.Main)
                 { setBackgroundWithDelay(it) }
             //it.setBackgroundColor(Color.YELLOW)
@@ -41,8 +68,8 @@ class MainActivity : AppCompatActivity() {
                     ImageView(applicationContext).apply {
                         setImageResource(R.drawable.squarecat)
                         layoutParams = params
+                        tag = "cat" // TODO: указать тег в зависимости от картинки
                         setOnClickListener(colorListener)
-
                     })
         }
         val rows = Array(4, { LinearLayout(applicationContext)})
